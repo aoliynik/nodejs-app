@@ -1,19 +1,15 @@
-ARG IMAGE_BASE=16-alpine
-
-FROM node:$IMAGE_BASE
+FROM node:16-alpine
 ENV NODE_ENV production
 
-# Install nginx and supervisord
-RUN apk add --no-cache bash git nginx python py2-pip && \
-    pip install wheel && \
-    pip install supervisor supervisor-stdout && \
-    rm -rf /etc/nginx/conf.d/default.conf
+# Install nginx and supervisor
+RUN apk add --no-cache bash nginx supervisor && \
+    rm -rf /etc/nginx/http.d/default.conf
 
 # Add supervisor configs
 ADD ./supervisord.conf /etc/supervisord.conf
 
 # Override Nginx's default config
-ADD nginx/default.conf /etc/nginx/conf.d/default.conf
+ADD nginx/default.conf /etc/nginx/http.d/default.conf
 
 # Add startup script
 ADD ./start.sh /start.sh
@@ -32,4 +28,5 @@ COPY src/. .
 EXPOSE 8080
 
 WORKDIR /
-CMD ["/start.sh"]
+
+ENTRYPOINT ["/start.sh"]
